@@ -15,10 +15,10 @@ public interface Visitor<T> {
     T visitLabel(Label instr);
     T visitReturnStmt(ReturnStmt instr);
     T visitPrintf(Printf instr);
-    T visitGOTO(GOTO instr);
+    T visitIRNode(IRNode instr);
 
 
-	default T visit(GOTO node) {
+	default T visit(IRNode node) {
 		return node.accept(this);
 	}
 

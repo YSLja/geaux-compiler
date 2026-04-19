@@ -31,7 +31,7 @@ public class Emitter {
             // 2. Emit functions
             for (Function f : funcs) {
                 sb.append(f.returntype + " ").append(f.name).append("() {\n");
-                for (GOTO instr : f.instr) {
+                for (IRNode instr : f.instr) {
                     sb.append(instr.accept(instrEmitter)).append("\n");
                 }
                 sb.append("}\n\n");
@@ -43,7 +43,7 @@ public class Emitter {
     public static class InstructionEmitter implements Visitor<String> {
 
         @Override
-        public String visitGOTO(GOTO instr) {
+        public String visitIRNode(IRNode instr) {
             throw new RuntimeException("Something bad happened\nEmail: blara4@lsu.edu");
         }
 
@@ -55,9 +55,15 @@ public class Emitter {
         @Override
         public String visitLiteral(Literal instr) {
             switch (instr.type) {
-                case INT -> { return instr.value.toString(); }
-                case STRING -> { return "\"" + instr.value.toString() + "\""; }
-                default -> throw new RuntimeException("Unsupported literal type: " + instr.type);
+                case INT ->
+                    { return instr.value.toString(); }
+                case STRING ->
+                    // Escape special characters so they're valid in a C string literal.
+                    // ANTLR converts \n in the .g source to a real newline byte;
+                    // we need to convert it back to the two-char sequence \n for C.
+                    { return "\"" + escapeForC(instr.value.toString()) + "\""; }
+                default ->
+                    throw new RuntimeException("Unsupported literal type: " + instr.type);
             }
         }
 
@@ -147,12 +153,28 @@ public class Emitter {
 
         public String visitPrintf(Printf instr) {
             StringBuilder sb = new StringBuilder();
-            sb.append("printf(\"").append(instr.format).append("\"");
+            // Escape the format string so literal newlines become \n in C.
+            sb.append("printf(\"").append(escapeForC(instr.format)).append("\"");
             for (IRExpr arg : instr.args) {
                 sb.append(", ").append(visit(arg));
             }
             sb.append(");");
             return sb.toString();
+        }
+
+        /**
+         * Escape a Java string so it is safe to embed in a C string literal.
+         * ANTLR processes escape sequences at lex time, so \n in the .g file
+         * becomes a real newline character in the AST. We need to convert it
+         * back to the two-character C escape sequence \n before writing C code.
+         */
+        private String escapeForC(String s) {
+            return s
+                .replace("\\", "\\\\")  // backslash must be first
+                .replace("\n",  "\\n")
+                .replace("\t",  "\\t")
+                .replace("\r",  "\\r")
+                .replace("\"",  "\\\""); // double-quote inside a string
         }
 
     }

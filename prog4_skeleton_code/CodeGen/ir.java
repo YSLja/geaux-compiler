@@ -25,16 +25,16 @@ enum Type {
 /**
  * Base class for all IR nodes.
  */
-abstract class GOTO {
+abstract class IRNode {
     public <T> T accept(Visitor<T> v) {
-        return v.visitGOTO(this);
+        return v.visitIRNode(this);
     }
 }
 
 /**
  * Expressions in IR.
  */
-abstract class IRExpr extends GOTO {
+abstract class IRExpr extends IRNode {
     public Type type;
 }
 
@@ -43,7 +43,7 @@ abstract class IRExpr extends GOTO {
  *
  * Anything that performs an action but does not compute a value directly.
  */
-abstract class IRStmt extends GOTO {}
+abstract class IRStmt extends IRNode {}
 
 /**
  * Builtin operations.
@@ -126,13 +126,13 @@ class Program {
  * }
  */
 class Function {
-    public ArrayList<GOTO> instr;
+    public ArrayList<IRNode> instr;
     public String name;
     public String returntype;
 
     public Function(String name, String ret) {
         this.name = name;
-        this.instr = new ArrayList<>();
+        this.instr = new ArrayList<IRNode>();
         this.returntype = ret;
     }
 }
