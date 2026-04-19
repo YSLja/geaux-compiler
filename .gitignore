@@ -1,0 +1,14 @@
+# Compiled Java classes
+*.class
+
+# macOS junk
+.DS_Store
+
+# IDE folders
+.vscode/
+.idea/
+
+# Generated C output files
+*.c
+*.out
+a.out
