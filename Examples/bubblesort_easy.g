@@ -35,4 +35,5 @@ fun int main() {
 
     // Print after
     printf("After: %d %d %d %d %d\n", a, b, c, d, e);
+    return 0;
 }

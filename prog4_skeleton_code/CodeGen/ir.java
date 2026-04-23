@@ -93,6 +93,7 @@ class Builtin extends IRStmt {}
 class Program {
     private int unique_name_counter;
     private int unique_label_counter;
+    private int unique_function_counter;
 
     public ArrayList<Var> globals;
     public ArrayList<Function> funcs;
@@ -100,6 +101,7 @@ class Program {
     public Program() {
         this.unique_name_counter = 0;
         this.unique_label_counter = 0;
+        this.unique_function_counter = 0;
         this.globals = new ArrayList<>();
         this.funcs = new ArrayList<>();
     }
@@ -110,6 +112,10 @@ class Program {
 
     public String getUniqueLabelName() {
         return "LABEL"+(++this.unique_label_counter);
+    }
+
+    public String getUniqueFunctionName() {
+        return "_f"+(++this.unique_function_counter);
     }
 }
 
@@ -171,9 +177,45 @@ class Printf extends Builtin {
  * Remember, the idea is that Geaux should have a simple "readfromfile("file")"
  * function, and the Emitter turns that into C that actually reads from the file.
  */
-class ReadFromFile extends Builtin {}
-class WriteToFile extends Builtin {}
-class Input extends Builtin {}
+class ReadFromFile extends IRExpr {
+    public final IRExpr path;
+
+    public ReadFromFile(IRExpr path) {
+        this.path = path;
+        this.type = Type.STRING;
+    }
+
+    @Override
+    public <T> T accept(Visitor<T> v) {
+        return v.visitReadFromFile(this);
+    }
+}
+
+class WriteToFile extends IRStmt {
+    public final IRExpr path;
+    public final IRExpr content;
+
+    public WriteToFile(IRExpr path, IRExpr content) {
+        this.path = path;
+        this.content = content;
+    }
+
+    @Override
+    public <T> T accept(Visitor<T> v) {
+        return v.visitWriteToFile(this);
+    }
+}
+
+class Input extends IRExpr {
+    public Input() {
+        this.type = Type.INT;
+    }
+
+    @Override
+    public <T> T accept(Visitor<T> v) {
+        return v.visitInput(this);
+    }
+}
 
 /**
  * Variable reference.
@@ -312,10 +354,12 @@ class Call extends IRExpr {
  */
 class ArrayLoad extends IRExpr {
     public final Var array;
+    public final Var sizeVar;
     public final IRExpr index;
 
-    public ArrayLoad(Var array, IRExpr index, Type type) {
+    public ArrayLoad(Var array, Var sizeVar, IRExpr index, Type type) {
         this.array = array;
+        this.sizeVar = sizeVar;
         this.index = index;
         this.type = type; 
     }
@@ -355,11 +399,13 @@ class Assign extends IRStmt {
  */
 class ArrayStore extends IRStmt {
     public final Var array;
+    public final Var sizeVar;
     public final IRExpr index;
     public final IRExpr value;
 
-    public ArrayStore(Var array, IRExpr index, IRExpr value) {
+    public ArrayStore(Var array, Var sizeVar, IRExpr index, IRExpr value) {
         this.array = array;
+        this.sizeVar = sizeVar;
         this.index = index;
         this.value = value; 
     }
@@ -385,10 +431,12 @@ class ArrayStore extends IRStmt {
  */
 class ArrayAlloc extends IRStmt {
     public final Var array;
+    public final Var sizeVar;
     public final IRExpr size;
 
-    public ArrayAlloc(Var array, IRExpr size) {
+    public ArrayAlloc(Var array, Var sizeVar, IRExpr size) {
         this.array = array;
+        this.sizeVar = sizeVar;
         this.size = size;
     }
 
@@ -479,5 +527,18 @@ class ReturnStmt extends IRStmt {
     @Override
     public <T> T accept(Visitor<T> v) {
         return v.visitReturnStmt(this);
+    }
+}
+
+class Eval extends IRStmt {
+    public final IRExpr expr;
+
+    public Eval(IRExpr expr) {
+        this.expr = expr;
+    }
+
+    @Override
+    public <T> T accept(Visitor<T> v) {
+        return v.visitEval(this);
     }
 }

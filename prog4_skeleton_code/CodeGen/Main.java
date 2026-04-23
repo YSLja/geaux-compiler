@@ -19,7 +19,10 @@ import Typecheck.Pass.JudgementsPass;
 import Typecheck.SymbolTable.Scope;
 import Typecheck.SymbolTable.FunSymbol;
 import Typecheck.Types.LIST;
+import Typecheck.Types.INT;
+import Typecheck.Types.STRING;
 import Typecheck.Types.VOID;
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -82,9 +85,8 @@ public class Main {
             ast.accept(csp);
 
             // ── Register built-in functions into the global scope ────────────────
-            // The typechecker doesn't know about Geaux builtins (printf, input, etc.)
-            // so we add them manually before the judgements pass runs.
-            // printf: takes a string format + any args, returns void (we use INT as a stand-in)
+            // The typechecker needs the builtins to exist in the symbol table
+            // before it validates calls to them.
             registerBuiltins(csp.globalscope);
 
             // Pass 3: Register type aliases (typedef) into the scope
@@ -143,9 +145,8 @@ public class Main {
         System.out.println("Compiled binary: " + binaryPath);
 
         // ── STAGE 6: Run the compiled binary ───────────────────────────────────
-        // On Mac/Linux the binary needs "./" prefix to run from current directory
-        String runCmd = isWindows() ? binaryPath : "./" + binaryPath;
-        ProcessBuilder runBuilder = new ProcessBuilder(runCmd);
+        File binaryFile = new File(binaryPath);
+        ProcessBuilder runBuilder = new ProcessBuilder(binaryFile.getAbsolutePath());
         runBuilder.inheritIO(); // show the program's output in the terminal
         runBuilder.start().waitFor();
     }
@@ -156,20 +157,17 @@ public class Main {
      * The typechecker has no built-in knowledge of printf, input, etc.
      * Adding them here prevents "Undefined variable: printf" errors.
      *
-     * For now we register printf as returning VOID with no params.
-     * The Lowerer handles printf specially anyway (using the Printf IR node).
+     * Builtins are lowered specially later, but the typechecker still needs
+     * to know their names and return types here.
      */
     private static void registerBuiltins(Scope globalScope) {
-        // An empty parameter list — printf is variadic, but the typechecker
-        // only needs to know it exists, not the exact types of its arguments.
+        // The Lowerer/typechecker handle arity and special behavior directly,
+        // so the parameter list stored here can stay empty.
         LIST emptyParams = new LIST(new ArrayList<>());
 
-        // Register printf: printf("format", ...) → void
-        globalScope.addFun("printf",      new FunSymbol("printf",      emptyParams, new VOID()));
-
-        // Register other builtins (Task 4 will fully implement these)
-        globalScope.addFun("input",       new FunSymbol("input",       emptyParams, new VOID()));
-        globalScope.addFun("readFromFile",  new FunSymbol("readFromFile",  emptyParams, new VOID()));
+        globalScope.addFun("printf", new FunSymbol("printf", emptyParams, new VOID()));
+        globalScope.addFun("input", new FunSymbol("input", emptyParams, new INT()));
+        globalScope.addFun("readFromFile", new FunSymbol("readFromFile", emptyParams, new STRING()));
         globalScope.addFun("writeToFile", new FunSymbol("writeToFile", emptyParams, new VOID()));
     }
 

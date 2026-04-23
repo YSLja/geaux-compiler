@@ -226,16 +226,51 @@ public class JudgementsPass extends ScopePass<Void> {
       }
       String funcName = ((Absyn.ID) node.name).value;
 
-      // ── Builtin bypass ───────────────────────────────────────────────────
-      // printf, input, readFromFile, writeToFile are variadic builtins.
-      // The Lowerer handles them specially (Printf IR node, etc.), so we
-      // skip argument-count and type checking here. The return type is VOID.
-      if (funcName.equals("printf") || funcName.equals("input")
-            || funcName.equals("readFromFile") || funcName.equals("writeToFile")) {
+      if (funcName.equals("printf")) {
+         if (node.params.list.isEmpty()) {
+            throw new TypeCheckException("printf requires at least one argument!");
+         }
+         if (!(node.params.list.get(0).typeAnnotation instanceof STRING)) {
+            throw new TypeCheckException("printf's first argument must be a string!");
+         }
          node.typeAnnotation = new VOID();
          return null;
       }
-      // ── End builtin bypass ────────────────────────────────────────────────
+
+      if (funcName.equals("writeToFile")) {
+         if (node.params.list.size() != 2) {
+            throw new TypeCheckException("writeToFile expects exactly 2 arguments!");
+         }
+         if (!(node.params.list.get(0).typeAnnotation instanceof STRING) ||
+             !(node.params.list.get(1).typeAnnotation instanceof STRING)) {
+            throw new TypeCheckException("writeToFile expects string path and string content!");
+         }
+         node.typeAnnotation = new VOID();
+         return null;
+      }
+
+      if (funcName.equals("readFromFile")) {
+         if (node.params.list.size() != 1) {
+            throw new TypeCheckException("readFromFile expects exactly 1 argument!");
+         }
+         if (!(node.params.list.get(0).typeAnnotation instanceof STRING)) {
+            throw new TypeCheckException("readFromFile expects a string path!");
+         }
+         node.typeAnnotation = new STRING();
+         return null;
+      }
+
+      if (funcName.equals("input")) {
+         if (node.params.list.size() > 1) {
+            throw new TypeCheckException("input expects 0 or 1 arguments!");
+         }
+         if (node.params.list.size() == 1 &&
+             !(node.params.list.get(0).typeAnnotation instanceof INT)) {
+            throw new TypeCheckException("input(target) requires an int target!");
+         }
+         node.typeAnnotation = new INT();
+         return null;
+      }
 
       // The identifier must refer to a known function in scope.
       if (!currentscope.hasFun(funcName)) {

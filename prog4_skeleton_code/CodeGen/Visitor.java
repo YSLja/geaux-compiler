@@ -10,10 +10,14 @@ public interface Visitor<T> {
     T visitAssign(Assign instr);
     T visitArrayStore(ArrayStore instr);
     T visitArrayAlloc(ArrayAlloc instr);
+    T visitReadFromFile(ReadFromFile instr);
+    T visitWriteToFile(WriteToFile instr);
+    T visitInput(Input instr);
     T visitIfStmt(IfStmt instr);
     T visitGoto(Goto instr);
     T visitLabel(Label instr);
     T visitReturnStmt(ReturnStmt instr);
+    T visitEval(Eval instr);
     T visitPrintf(Printf instr);
     T visitIRNode(IRNode instr);
 

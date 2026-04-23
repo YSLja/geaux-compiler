@@ -17,4 +17,5 @@ fun int main() {
     }
 
     outer();
+    return 0;
 }

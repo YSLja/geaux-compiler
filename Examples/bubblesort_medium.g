@@ -29,11 +29,11 @@ fun void bubbleSort(int n) {
 fun int main() {
     var int x = 0;  
 
-    arr[x] = 5; 
-    arr[x] = 1; 
-    arr[x] = 4; 
-    arr[x] = 2; 
-    arr[x] = 3; 
+    arr[0] = 5; 
+    arr[1] = 1; 
+    arr[2] = 4; 
+    arr[3] = 2; 
+    arr[4] = 3; 
 
     x = 0;
     printf("Before: ");
@@ -52,4 +52,5 @@ fun int main() {
         x = x + 1;
     }
     printf("\n");
+    return 0;
 }

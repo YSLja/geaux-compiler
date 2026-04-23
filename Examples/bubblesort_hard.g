@@ -52,4 +52,5 @@ fun int main() {
         x = x + 1;
     }
     printf("\n");
+    return 0;
 }

@@ -16,4 +16,5 @@ fun int main() {
     if (y < x) {
         printf("x wins\n");
     }
+    return 0;
 }

@@ -20,4 +20,5 @@ fun int main() {
     test();
 
     printf("Global after: %d\n", x);
+    return 0;
 }

@@ -3,4 +3,5 @@ fun int main() {
     while(1) {
         printf("Ctrl+c to make it stop!\n");
     }
+    return 0;
 }

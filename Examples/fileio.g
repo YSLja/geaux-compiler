@@ -9,4 +9,5 @@ fun int main() {
     result = readFromFile(path);
 
     printf("%s", result);
+    return 0;
 }
