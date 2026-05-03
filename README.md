@@ -17,7 +17,7 @@ This submission implements the Project 4 Geaux compiler pipeline:
 
 The required ANTLR/parser jars are included in `prog4_skeleton_code/lib/`.
 
-## Build
+## How to Build
 
 From the repository root:
 
@@ -32,7 +32,7 @@ If your unzip tool does not preserve executable permissions, use:
 bash compile.sh
 ```
 
-## Run
+## How to Run
 
 From `prog4_skeleton_code/`, pass a `.g` file to `run.sh`:
 
