@@ -101,8 +101,6 @@ public class Main {
             JudgementsPass jp = new JudgementsPass(csp.globalscope);
             ast.accept(jp);
 
-            System.out.println("Type check passed!");
-
         } catch (TypeCheckException e) {
             System.err.println("Type error: " + e.getMessage());
             System.exit(1);
@@ -128,7 +126,6 @@ public class Main {
         try (PrintWriter writer = new PrintWriter(cFile)) {
             writer.print(cCode);
         }
-        System.out.println("Generated C: " + cFile);
 
         // ── STAGE 5: Compile with gcc ──────────────────────────────────────────
         // Output binary: same name as the .g file but without the extension
@@ -142,13 +139,15 @@ public class Main {
             System.err.println("gcc failed! See the generated C file: " + cFile);
             System.exit(1);
         }
-        System.out.println("Compiled binary: " + binaryPath);
 
         // ── STAGE 6: Run the compiled binary ───────────────────────────────────
         File binaryFile = new File(binaryPath);
         ProcessBuilder runBuilder = new ProcessBuilder(binaryFile.getAbsolutePath());
         runBuilder.inheritIO(); // show the program's output in the terminal
-        runBuilder.start().waitFor();
+        int runExitCode = runBuilder.start().waitFor();
+        if (runExitCode != 0) {
+            System.exit(runExitCode);
+        }
     }
 
     /**
